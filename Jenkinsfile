@@ -31,5 +31,24 @@ pipeline {
                 bat 'dotnet publish --configuration Release'
             }
         }
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t ayach2000/repository:latest .'
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                bat 'docker login -u ayach2000 -p ayadocker'
+                bat 'docker push ayach2000/repository:latest'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sshagent(['deploy-key']) {
+                    bat 'scp docker-compose.yml user@remote-server:/path/to/deploy'
+                    bat 'ssh user@remote-server "docker-compose up -d"'
+                }
+            }
+        }
     }
 }
